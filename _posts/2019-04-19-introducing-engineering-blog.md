@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Introducing LocoNav Enginnering Blog
+title: Introducing LocoNav Tech Blog
 categories: [Miscellaneous, Intro]
 ---
 
