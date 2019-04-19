@@ -324,6 +324,11 @@ nav {
   border-bottom: 1px solid #ddd;
   background-color: $lightGray;
 }
+#landing-footer{
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
 
 footer {
   padding: 20px 0;
