@@ -5,14 +5,20 @@
 # Name of your site (displayed in the header)
 name: LocoNav Tech Blog
 
-# Name of the author
-author: LocoNav Team
+# Authors
+gagan93:
+  name: 'Gagandeep Singh'
+  web: 'https://gagan93jtg.github.io'
+bikash:
+  name: 'Bikash'
+  web: 'https://beeeku.github.io'
+
 
 # Short bio or description (displayed in the header)
-description: Engineering made for your transport 
+description: Engineering made for your transport
 
 # URL of your avatar or profile pic (you could use your GitHub profile pic)
-avatar: 
+avatar:
 
 #
 # Flags below are optional
@@ -30,7 +36,7 @@ footer-links:
   pinterest:
   rss: rss
   twitter:
-  stackoverflow: 
+  stackoverflow:
   youtube: # channel/<your_long_string> or user/<user-name>
   googleplus: # anything in your profile username that comes after plus.google.com/
   playconsole:
