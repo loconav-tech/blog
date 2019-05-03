@@ -5,20 +5,21 @@ categories: [ruby, whenever, redis, rake, active_admin]
 author: gagan93
 ---
 
-We have our web backend in Ruby on rails and we use a lot of gems for different purposes. One such useful gem is **[whenever](https://github.com/javan/whenever)**. We have hundreds of cronjobs running per day. As our system scaled, it was important to make sure that cronjobs run in expected time. For eg: if a cronjob has to run every hour, we must make sure that one copy must run in less than an hour so that there are no cases when multiple copies of same cron are running. Though whenever provided a very clean syntax for defining and deploying cronjobs, there was no insight on what's going on. So we started building a simple inhouse solution.
+We have our web backend in Ruby on rails, and we use many gems for different purposes. One such useful gem is **[whenever](https://github.com/javan/whenever)**. We have hundreds of cronjobs running per day. As our system scaled, it was essential to make sure that cronjobs run in the expected time. For, e.g., if a cronjob has to run every hour, we must make sure that one copy must run in less than an hour so that there are no cases when multiple copies of the same cron are running. Though whenever provided a very clean syntax for defining and deploying cronjobs, there was no insight on what’s going on. So we started building a simple in-house solution.
+
 
 ## What we wanted to build
 1. A method to calculate runtime for any cronjob.
-2. A syntax in which we can define expected runtime for a job (which should be less than the running frequency of job).
-3. A datastore to keep last runtime for any job.
-4. A notification mechanism (Slack, Hipchat, Email, etc).
-5. A user interface to view last runtime vs expected runtime for all cronjobs.
+2. A syntax in which we can define expected runtime for a job (which should be less than the running frequency of the job).
+3. A datastore to keep the last runtime for any job.
+4. A notification mechanism (Slack/ Hipchat/ Email).
+5. A user interface to view the last runtime vs. expected runtime for all cronjobs.
 
-Let's discuss all these one by one and build a solution :D
+Let’s discuss all these one by one and build a solution :D
 
 
 ## Calculating cron runtime
-[whenever](https://github.com/javan/whenever) provides two ways of running rails scripts : rake tasks and runners. One easy way to calculate runtimes is using **[rake hooks](https://medium.com/@ochagata/implementing-global-hooks-for-rake-9a11632731a4)**. Rake provides **start** and **end** hooks which we can use to check start time and end time of a cron job. So, first we moved all whenever crons to rake based scripts (we had few jobs which were written using _runner_ syntax). But these hooks run on all rake tasks (some of which may not be cron jobs), so we namespaced cron jobs properly to make this hook run for cron based rake tasks only. Also, we used **redis** hashes to store start_time, end_time and task details. Here is the sample code,
+[whenever](https://github.com/javan/whenever) provides two ways of running rails scripts: rake tasks and runners. One easy way to calculate runtimes is by using rake hooks. Rake provides start and end hooks which we can use to check the start time and end time of a cron job. So first, we moved all whenever crons to rake based scripts (we had few jobs which were written using runner syntax). However, these hooks run on all rake tasks (some of which may not be cron jobs), so we namespaced cron jobs properly to make this hook run for cron based rake tasks only. Also, we used Redis hashes to store start_time, end_time and task details. Here is the sample code,
 
 ```ruby
 # Rakefile
@@ -82,7 +83,7 @@ namespace :logger do
 end
 ```
 
-The after_logger notes end_time, takes previous runtime from redis and calculates job runtime. If this comes out to be more than threshold, it can send a notification.
+The after_logger notes end_time, takes the previous runtime from Redis and calculates job runtime. If this comes out to be more than the threshold, it can send a notification.
 
 
 ## Syntax for defining cron runtime
@@ -93,7 +94,7 @@ We checked whenever documentation and found we can define these things for a cro
 3. Log files (standard and error)
 4. Rake command details
 
-Only thing we wanted to add was _runtime_threshold_. So for each task, we defined some decent threshold initially and modified it later as per actual job runtimes. We came up with our own hash based syntax in a module called Cron::ExecutionConstraints. Here, we also defined our time in IST as all the customers in this cluster are in IST otherwise whenever accepts UTC time.
+The only thing we wanted to add was _runtime_threshold_. So for each task, we defined some decent threshold initially and modified it later as per actual job runtimes. We came up with our own hash based syntax in a module called Cron::ExecutionConstraints. Here, we also defined our time in IST as all the customers in this cluster are in IST otherwise whenever accepts time as UTC.
 
 ```ruby
 module Cron
@@ -140,7 +141,7 @@ end
 
 
 ## A datastore to keep last runtime for any job
-We are using redis for this purpose, code for which is wrapped in a module called `HeartBeat`. There is no special need to use Redis for storing stats, you could use MongoDB or even a SQL database for this.
+We are using redis for this purpose, code for which is wrapped in a module called `HeartBeat`. There is no particular need to use Redis for storing stats, and you could use MongoDB or even a SQL database for this.
 
 
 ## A notification mechanism
@@ -148,7 +149,7 @@ We are using redis for this purpose, code for which is wrapped in a module calle
 
 
 ## A user interface to view all this
-We use [active_admin](https://github.com/activeadmin/activeadmin) as our admin platform. So, to build a view over this, we used active admin [custom pages](https://activeadmin.info/10-custom-pages.html). We built a page which iterates over the redis hash (that stores cron runtimes and other meta) and just shows up last runtime details for each cron. It highlights a row in red if the job runtime is more than expected runtime. Our view looks like this:
+We use [active_admin](https://github.com/activeadmin/activeadmin) as our admin platform. So, to build a view over this, we used active admin [custom pages](https://activeadmin.info/10-custom-pages.html). We built a page which iterates over the redis hash (that stores cron runtimes and other meta) and shows up last runtime details for each cron. It highlights a row in red if the job runtime is more than the expected runtime. Our view looks like this:
 
 Inline-style:
 ![alt text](https://github.com/loconav-tech/blog/blob/master/images/blog_2/sample_view_active_admin.png?raw=true)
