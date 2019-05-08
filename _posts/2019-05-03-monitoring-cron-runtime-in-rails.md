@@ -5,7 +5,7 @@ categories: [whenever, rake]
 author: gagan93
 ---
 
-We have our web backend in Ruby on rails, and we use many gems for different purposes. One such useful gem is **[whenever](https://github.com/javan/whenever)**. We have thousands of cronjobs running per day. As our system scaled, it was essential to make sure that cronjobs run in the expected time. For, e.g., if a cronjob has to run every hour, we must make sure that cron runs in less than an hour. To avoid multiple copies of cron, whenever providers a [solution](https://github.com/javan/whenever/wiki/Exclusive-cron-task-lock-with-flock) using linux file locks. Though whenever provided a very clean syntax for defining and deploying cronjobs, there was no insight on what’s going on. So we started building a simple in-house solution.
+We have our web backend in Ruby on rails, and we use many gems for different purposes. One such useful gem is **[whenever](https://github.com/javan/whenever)**. We have thousands of cronjobs running per day. As our system scaled, it was essential to make sure that cronjobs run in the expected time. For, e.g., if a cronjob has to run every hour, we must make sure that cron runs in less than an hour. To avoid multiple copies of cron, whenever providers a [solution](https://github.com/javan/whenever/wiki/Exclusive-cron-task-lock-with-flock) using linux file locks. Though whenever provided a very clean syntax for defining and deploying cronjobs, there was no insight on what is going on. So we started building a simple in-house solution.
 
 
 ## What we wanted to build
@@ -82,14 +82,14 @@ The after_logger notes end_time, takes the previous runtime from Redis and calcu
 
 
 ## Syntax for defining cron runtime
-We checked _whenever_ documentation and found we can define these things for a cronjob:
+We checked _whenever_ documentation and found we can define the following for a cronjob:
 
 1. Running frequency (Eg. 1.day)
 2. Time (Eg. 1:00 am)
 3. Log files (standard and error)
 4. Rake command details
 
-The only thing we wanted to add was _runtime_threshold_. So for each task, we defined some decent threshold initially and modified it later as per actual job runtimes. We came up with our own hash based syntax in a module called .
+The only thing we wanted to add was _runtime_threshold_. So for each task, we initially defined some decent threshold and modified it later as per actual job runtimes. We came up with our own hash based syntax in a module called .
 
 ```ruby
 module Cron
@@ -131,7 +131,7 @@ end
 
 
 ## A datastore to keep last runtime for a job
-We are using redis as a datastore here, code for which is wrapped in a module called `CronMonitor`. There is no particular need to use Redis here, and you could use MongoDB or a SQL database for storing stats.
+We are using redis as a datastore here, code for which is wrapped in a module called `CronMonitor`. There is no particular need to use Redis here, and you can use MongoDB or a SQL database for storing stats.
 
 Here's the sample code for redis based implementation:
 ```ruby
