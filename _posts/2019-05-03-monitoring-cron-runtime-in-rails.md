@@ -5,15 +5,14 @@ categories: [whenever, rake]
 author: gagan93
 ---
 
-We have our web backend in Ruby on rails, and we use many gems for different purposes. One such useful gem is **[whenever](https://github.com/javan/whenever)**. We have thousands of cronjobs running per day. As our system scaled, it was essential to make sure that cronjobs run in the expected time. For, e.g., if a cronjob has to run every hour, we must make sure that cron runs in less than an hour. To avoid multiple copies of cron, whenever providers a [solution](https://github.com/javan/whenever/wiki/Exclusive-cron-task-lock-with-flock) using linux file locks. Though whenever provided a very clean syntax for defining and deploying cronjobs, there was no insight on what is going on. So we started building a simple in-house solution.
-
+We have our web backend in Ruby on Rails, and we use many gems for different purposes. One such useful gem is **[whenever](https://github.com/javan/whenever)**. We have thousands of cron tasks running per day. As our system scaled, it was essential to make sure these tasks run in the expected time. For e.g., if a task has to run every hour, we must make sure that it runs in less than an hour. If it takes more than the expected time, the relevant teams must get notified. To avoid multiple copies of cron, whenever provides a [solution](https://github.com/javan/whenever/wiki/Exclusive-cron-task-lock-with-flock) using linux file locks. Though whenever provided a very clean syntax for defining and deploying cronjobs, it does not provide any mechanism for tracking them. So we started building a simple in-house solution.
 
 ## What we wanted to build
-1. A method to calculate runtime for any cronjob.
-2. A syntax in which we can define expected runtime for a job (which should be less than the running frequency of the job).
-3. A datastore to keep the last runtime for any job.
+1. A method to calculate runtime of a cronjob.
+2. A DSL to define the expected runtime of a job.
+3. A datastore to persist the last runtime of a job.
 4. A notification mechanism (Slack/ Hipchat/ Email).
-5. A user interface to view the last runtime vs. expected runtime for all cronjobs.
+5. A user interface to view the last runtime vs. expected runtime.
 
 Let’s discuss all these one by one and build a solution :D
 
@@ -89,7 +88,7 @@ We checked _whenever_ documentation and found we can define the following for a 
 3. Log files (standard and error)
 4. Rake command details
 
-The only thing we wanted to add was _runtime_threshold_. So for each task, we initially defined some decent threshold and modified it later as per actual job runtimes. We came up with our own hash based syntax in a module called .
+The only thing we wanted to add was _runtime_threshold_. So for each task, we initially defined some decent threshold and modified it later as per actual job runtimes. We came up with our own hash based syntax in a module.
 
 ```ruby
 module Cron
@@ -131,7 +130,7 @@ end
 
 
 ## A datastore to keep last runtime for a job
-We are using redis as a datastore here, code for which is wrapped in a module called `CronMonitor`. There is no particular need to use Redis here, and you can use MongoDB or a SQL database for storing stats.
+We are using redis to persist the runtime stats, code for which is wrapped in a module called `CronMonitor`. There is no particular need to use Redis here, and you can use MongoDB or a SQL database for storing them.
 
 Here's the sample code for redis based implementation:
 ```ruby
@@ -146,7 +145,6 @@ module CronMonitor
   end
 end
 ```
-
 
 ## A notification mechanism
 `Notifier.cron_threshold_exceeded(msg)` in the code snippet is also kept as a black box. You can configure any notification mechanism in this class.
@@ -166,7 +164,7 @@ end
 ## A user interface to view all this
 We use [active_admin](https://github.com/activeadmin/activeadmin) as our admin platform. So, to build a view over this, we used active admin [custom pages](https://activeadmin.info/10-custom-pages.html). We built a page to view this data and highlight the jobs which take longer than expected.
 
-Here's what we needed to build
+Here's how our UI looks like.
 
 ![alt text](https://github.com/loconav-tech/blog/blob/master/images/blog_2/sample_view_active_admin.png?raw=true)
 
