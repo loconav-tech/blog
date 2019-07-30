@@ -41,7 +41,7 @@ ActiveAdmin.register AnotherWallet do
 end
 ```
 
-The page was working fine before I added a filter on `user_email`. On filtering by `user_email`, I got the following error
+The page worked fine before I added a filter on `user_email`. On filtering by `user_email`, I got the following error
 ```sql
 PG::AmbiguousColumn: ERROR:  column reference "balance" is ambiguous
 LINE 1: ... ("users"."email" ILIKE '%example%') AND (balance <=...
@@ -55,9 +55,9 @@ SELECT COUNT(DISTINCT "another_wallets"."id") FROM "another_wallets"
 balance = 0
 ```
 
-The query was fired by the `zero_balance` scope to count how many wallets have zero balance. The reason for this error was self-explanatory - Postgres did a join between tables which have same column name (`balance`), and it had no idea how to differentiate between both.
+The query was fired by the `zero_balance` scope to count how many wallets have zero balance. The reason for this error was self-explanatory - Postgres performed a join between tables which had same column name (`balance`), and it had no idea how to differentiate between both.
 
-At SQL level, the fix is simple; We need to add table name before specifying column. But because _ActiveAdmin_ provides a DSL for creating everything, I thought there would be an option for this as well.
+At SQL level, the fix is simple; We need to add the table name before specifying the column. But because _ActiveAdmin_ provides a DSL for creating everything, I thought there would be an option for this as well.
 
 I spent hours debugging this, but the fix was very simple and was required at the model level. Rather than initializing scopes like this:
 
@@ -68,7 +68,7 @@ class AnotherWallet < ApplicationRecord
 end
 ```
 
-I had to mention complete table name in scope
+I had to mention the complete table name in scope
 
 ```ruby
 class AnotherWallet < ApplicationRecord
