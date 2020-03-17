@@ -6,11 +6,11 @@ author: amit
 ---
 
 
-Recently, i was testing an api, which is deployed on our staging machine.
+Recently, I was testing an API, which is deployed on our staging machine.
 The postman request looked something like this.
 ![alt text](https://i.imgur.com/YpzgFI0.png)
 
-So after sending the request the respose body said.
+So after sending the request, the response body said.
 
 ```
 {
@@ -19,21 +19,21 @@ So after sending the request the respose body said.
 With Status: 405 Method Not Allowed
 ```
 So I thought I made a mistake in my code and the request method should be POST instead of any other, but it wasn't the case.
-then i checked the logs on the staging machine which is deployed on aws.
+then I checked the logs on the staging machine which is deployed on AWS.
 
 The logs looked something like this.
 ```
 INFO -- : Started GET "/api/v5/trip_events"
 ```
-The logs were showing that a GET request on this url was sent, but i was sending a POST request.
-Then i tested the api with ```https``` instead of ```http``` in the url and the request returned expected response.
+The logs were showing that a GET request on this url was sent, but I was sending a POST request.
+Then I tested the API with ```https``` instead of ```http``` in the URL and the request returned expected response.
 
 
-So there was something happening between postman sending the request and rails server receiving the request..
+So there was something happening between postman sending the request and rails server receiving the request.
 We were using AWS Application load balancer for proxying and performing HTTP(80) to HTTPS(443) redirects.
 So when a request is made via HTTP the proxy returns ```302``` redirect to HTTPS.
 
-While reading about HTTP status Codes on https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.3
+While reading about HTTP status codes on https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.3
 
 I found a note for status `302 found`.
 
@@ -47,14 +47,14 @@ Note: RFC 1945 and RFC 2068 specify that the client is not allowed
       kind of reaction is expected of the client.
 ```
 
-So, what was happening with the request ?
+So, what was happening with the request?
 1. a POST request is sent via HTTP
 2. gets redirected to HTTPS with 302, it gets treated as `303`
 3. and changes its request method sent via HTTPS to GET.
 
-The Solution..
+The Solution.
 returning 307 instead of 302 on the application load balancer.
 
-Unfortunately AWS ALB does not support the proper HTTP status code which we need to redirect POST to POST, which is `307`.
+Unfortunately, AWS ALB does not support the proper HTTP status code which we need to redirect POST to POST, which is `307`.
 
 Share your thoughts about this in the comments section below.
